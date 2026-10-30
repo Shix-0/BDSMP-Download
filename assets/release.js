@@ -1,66 +1,18 @@
 (() => {
-  const releasesUrl = "https://api.github.com/repos/Shix-0/fabric-launcher-1.21.1/releases";
+  const releasesUrl = "https://api.github.com/repos/Shix-0/fabric-launcher-1.21.1/releases?per_page=20";
   const releaseListUrl = "https://github.com/Shix-0/fabric-launcher-1.21.1/releases";
-  // Set this to the GitHub total at the moment you want the visible counter to restart.
-  const DOWNLOAD_COUNT_BASELINE = 0;
   const downloadButton = document.getElementById("download-button");
   const heroDownload = document.getElementById("hero-download");
   const status = document.getElementById("release-status");
   const version = document.getElementById("release-version");
   const size = document.getElementById("release-size");
-  const downloadCount = document.getElementById("download-count");
   const error = document.getElementById("release-error");
-  let currentGlobalDownloadCount = null;
-
-  const isInstaller = asset => typeof asset.name === "string" &&
-    asset.name.toLowerCase().endsWith(".exe") && /installer/i.test(asset.name);
-
-  async function loadAllReleases() {
-    const allReleases = [];
-    for (let page = 1; ; page += 1) {
-      const response = await fetch(releasesUrl + "?per_page=100&page=" + page, {
-        headers: { Accept: "application/vnd.github+json" },
-        cache: "no-store"
-      });
-      if (!response.ok) throw new Error("GitHub returned HTTP " + response.status + ".");
-      const pageReleases = await response.json();
-      allReleases.push(...pageReleases);
-      if (pageReleases.length < 100) return allReleases;
-    }
-  }
-
-  function totalInstallerDownloads(releases) {
-    return releases
-      .filter(item => !item.draft && Array.isArray(item.assets))
-      .flatMap(item => item.assets.filter(isInstaller))
-      .reduce((total, asset) => total + (Number.isFinite(asset.download_count) ? asset.download_count : 0), 0);
-  }
-
-  function showDownloadCount(total) {
-    currentGlobalDownloadCount = Math.max(0, total - DOWNLOAD_COUNT_BASELINE);
-    downloadCount.textContent = new Intl.NumberFormat("en-US").format(currentGlobalDownloadCount) + " global downloads";
-  }
-
-  async function refreshDownloadCount() {
-    try {
-      showDownloadCount(totalInstallerDownloads(await loadAllReleases()));
-    } catch (cause) {
-      console.warn("ShiroNeko download count refresh failed:", cause);
-    }
-  }
-
-  function refreshCountAfterDownloadClick() {
-    if (currentGlobalDownloadCount === null) return;
-    downloadCount.textContent = new Intl.NumberFormat("en-US").format(currentGlobalDownloadCount) + " global downloads · syncing";
-    window.setTimeout(refreshDownloadCount, 2500);
-  }
 
   function showUnavailable(message) {
     status.className = "release-status failed";
     status.innerHTML = "<i></i> Release unavailable";
     version.textContent = "No Windows installer found";
     size.textContent = "Check GitHub Releases";
-    downloadCount.textContent = "Download count unavailable";
     downloadButton.textContent = "View releases ↗";
     downloadButton.href = releaseListUrl;
     downloadButton.setAttribute("aria-disabled", "false");
@@ -73,14 +25,18 @@
 
   async function loadLatestRelease() {
     try {
-      const releases = await loadAllReleases();
-      showDownloadCount(totalInstallerDownloads(releases));
+      const response = await fetch(releasesUrl, {
+        headers: { Accept: "application/vnd.github+json" },
+        cache: "no-store"
+      });
+      if (!response.ok) throw new Error("GitHub returned HTTP " + response.status + ".");
+      const releases = await response.json();
       const release = releases.find(item => !item.draft && Array.isArray(item.assets) &&
-        item.assets.some(isInstaller));
+        item.assets.some(asset => typeof asset.name === "string" && asset.name.toLowerCase().endsWith(".exe") && /installer/i.test(asset.name)));
       if (!release) return showUnavailable("No published release includes a Windows installer yet.");
 
       const executable = release.assets
-        .filter(isInstaller)
+        .filter(asset => typeof asset.name === "string" && asset.name.toLowerCase().endsWith(".exe") && /installer/i.test(asset.name))
         .sort((a, b) => (b.size || 0) - (a.size || 0))[0];
       if (!executable || executable.size < 50000 || !executable.browser_download_url) {
         return showUnavailable("The release does not contain a complete Windows installer.");
@@ -92,7 +48,7 @@
 
       downloadButton.href = url.href;
       downloadButton.setAttribute("aria-disabled", "false");
-      downloadButton.innerHTML = "Download installer · " + (executable.size / 1048576).toFixed(1) + " MB <span aria-hidden="true">↓</span>";
+      downloadButton.innerHTML = 'Download installer · ' + (executable.size / 1048576).toFixed(1) + ' MB <span aria-hidden="true">↓</span>';
       heroDownload.href = url.href;
       status.className = "release-status ready";
       status.innerHTML = "<i></i> Latest installer ready";
@@ -115,11 +71,9 @@
 
   downloadButton.addEventListener("click", event => {
     if (downloadButton.getAttribute("aria-disabled") === "true") event.preventDefault();
-    else refreshCountAfterDownloadClick();
   });
   heroDownload.addEventListener("click", event => {
     if (heroDownload.href.endsWith("#download")) event.preventDefault();
-    else refreshCountAfterDownloadClick();
   });
   loadLatestRelease();
 })();
