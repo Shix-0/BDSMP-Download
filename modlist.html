@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista plików</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<table>
+    <tbody id="tabela"></tbody>
+</table>
+
+<input type="file" id="plik">
+
+<script>
+
+document.getElementById('plik').addEventListener('change', async (e) => {
+
+    const x = JSON.parse(await e.target.files[0].text());
+    const tabela = document.getElementById("tabela");
+    tabela.innerHTML = "";
+
+    let tr;
+    for (let i = 0; i < x.length; i++) {
+        if (i % 5 == 0) {              // nowy wiersz co 5 elementów
+            tr = document.createElement("tr");
+            tabela.appendChild(tr);
+        }
+        const td = document.createElement("td");
+        td.textContent = x[i];
+        tr.appendChild(td);
+    }
+
+});
+
+</script>
+
+</body>
+</html>
