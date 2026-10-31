@@ -11,13 +11,11 @@
     <tbody id="tabela"></tbody>
 </table>
 
-<input type="file" id="plik">
-
 <script>
-
-document.getElementById('plik').addEventListener('change', async (e) => {
-
-    const x = JSON.parse(await e.target.files[0].text());
+fetch('dane.txt')
+  .then(r => r.text())
+  .then(tekst => {
+    const x = JSON.parse(tekst);
     const tabela = document.getElementById("tabela");
     tabela.innerHTML = "";
 
