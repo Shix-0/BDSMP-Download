@@ -512,38 +512,45 @@ h1 em{
     }
 }
 table {
-  width: 25%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(120, 180, 200, 0.15);
-  border-radius: 10px;
-  overflow: hidden;
-  backdrop-filter: blur(6px);
-  font-family: "Segoe UI", system-ui, sans-serif;
-  font-size: 14px;
-  color: #e6edf3;
+    width: 30%;
+    max-width: 30%;
+    margin: 30px auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(120, 180, 200, 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+    backdrop-filter: blur(6px);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    color: #e6edf3;
 }
 
 #tabela td {
-  padding: 7px 14px;
-  border-bottom: 1px solid rgba(120, 180, 200, 0.08);
-  transition: background 0.15s, color 0.15s;
+    padding: 7px 14px;
+    border-bottom: 1px solid rgba(120, 180, 200, 0.08);
+    transition: background 0.15s, color 0.15s;
 }
 
 #tabela tr:last-child td {
-  border-bottom: none;
+    border-bottom: none;
 }
 
-/* delikatne zebrowanie */
 #tabela tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.02);
 }
 
-/* podświetlenie tylko jednej komórki */
 #tabela tr td:hover {
-  background: rgba(80, 170, 200, 0.14);
-  color: #ffffff;
+    background: rgba(80, 170, 200, 0.14);
+    color: #ffffff;
 }
+
+/* Na telefonach tabela zajmuje więcej miejsca */
+@media (max-width: 800px) {
+    table {
+        width: 80%;
+        max-width: 80%;
+    }
 }
 ```
